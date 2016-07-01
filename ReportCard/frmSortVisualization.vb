@@ -6,8 +6,8 @@ Public Class frmSortVisualization
     Private Connection As OleDbConnection
     Private LastError As String
     Private colCollection As Collection
-    Private dLeftPosition As Double = 150
-    Private dMaxWidth As Double = 200
+    Private dMaxWidth As Double
+    Private dMaxValue As Double
     Private iSwapSpeed As Integer = 0
 
     Private Sub btnLoadDB_Click(sender As Object, e As EventArgs) Handles btnLoadDB.Click
@@ -29,15 +29,53 @@ Public Class frmSortVisualization
         Dim iRowCount As Integer
         Dim iRecords As Integer
         Dim lblRecord As Label
-        Dim dLabelHeight As Double
-        Dim fLabelFont As Font
         Dim pMargin As Padding
-        Dim iFontSize As Integer
-        Dim dMaxValue As Double
-        Dim dValue As Double
         sSQL = "SELECT * FROM STUDENT"
         da = New OleDbDataAdapter(sSQL, Connection)
         iRecords = da.Fill(ds)
+        pMargin = New Padding(0)
+        dMaxValue = 0
+        For iRowCount = 0 To iRecords - 1
+            If Double.Parse(ds.Tables(0).Rows.Item(iRowCount).Item(1).ToString()) > dMaxValue Then
+                dMaxValue = Double.Parse(ds.Tables(0).Rows.Item(iRowCount).Item(1).ToString())
+            End If
+        Next
+
+        If colCollection IsNot Nothing Then
+            If colCollection.Count > 0 Then
+                For Each lblRecord In colCollection
+                    lblRecord.Dispose()
+                Next
+                colCollection.Clear()
+            End If
+        End If
+
+        colCollection = New Collection()
+        For iRowCount = 0 To iRecords - 1
+            lblRecord = New Label()
+            lblRecord.AutoSize = False
+            lblRecord.AutoEllipsis = True
+            lblRecord.Text = ds.Tables(0).Rows.Item(iRowCount).Item(1).ToString()
+            lblRecord.Padding = pMargin
+            lblRecord.BorderStyle = BorderStyle.FixedSingle
+            lblRecord.BackColor = Color.Aquamarine
+            lblRecord.TextAlign = ContentAlignment.MiddleCenter
+            colCollection.Add(lblRecord, "L:" & iRowCount)
+            Me.Controls.Add(lblRecord)
+        Next
+        ds.Clear()
+        da.Dispose()
+        DrawLabels()
+    End Sub
+
+    Private Sub DrawLabels()
+        Dim lblRecord As Label
+        Dim dLabelHeight As Double
+        Dim iRecords As Integer
+        Dim iFontSize As Integer
+        Dim fLabelFont As Font
+        Dim iRowCount As Integer
+        iRecords = colCollection.Count
         dLabelHeight = (Me.Height - 30) / (iRecords + 1)
         iFontSize = 20
         fLabelFont = New Font("Arial", iFontSize)
@@ -46,33 +84,15 @@ Public Class frmSortVisualization
             fLabelFont.Dispose()
             fLabelFont = New Font("Arial", iFontSize)
         End While
-        pMargin = New Padding(0)
-        dMaxValue = 0
-        For iRowCount = 0 To iRecords - 1
-            If Double.Parse(ds.Tables(0).Rows.Item(iRowCount).Item(1).ToString()) > dMaxValue Then
-                dMaxValue = Double.Parse(ds.Tables(0).Rows.Item(iRowCount).Item(1).ToString())
-            End If
-        Next
-        colCollection = New Collection()
-        For iRowCount = 0 To iRecords - 1
-            lblRecord = New Label()
-            lblRecord.AutoSize = False
-            lblRecord.AutoEllipsis = True
-            lblRecord.Height = dLabelHeight
-            lblRecord.Text = ds.Tables(0).Rows.Item(iRowCount).Item(1).ToString()
-            lblRecord.Padding = pMargin
-            dValue = Double.Parse(ds.Tables(0).Rows.Item(iRowCount).Item(1).ToString())
-            lblRecord.Left = dLeftPosition
-            lblRecord.Width = dMaxWidth * (dValue / dMaxValue)
-            lblRecord.Top = (dLabelHeight * iRowCount) + 1
+
+        For iRowCount = 0 To colCollection.Count - 1
+            lblRecord = colCollection.Item("L:" & iRowCount)
             lblRecord.Font = fLabelFont
-            lblRecord.BorderStyle = BorderStyle.FixedSingle
-            lblRecord.BackColor = Color.Aquamarine
-            colCollection.Add(lblRecord, "L:" & iRowCount)
-            Me.Controls.Add(lblRecord)
+            lblRecord.Height = dLabelHeight
+            lblRecord.Top = (dLabelHeight * iRowCount) + 1
+            lblRecord.Width = dMaxWidth * (Double.Parse(lblRecord.Text) / dMaxValue)
+            lblRecord.Left = (Width - lblRecord.Width) / 2
         Next
-        ds.Clear()
-        da.Dispose()
     End Sub
 
     Private Function OpenConnection(sDatabase As String) As Boolean
@@ -162,6 +182,10 @@ Public Class frmSortVisualization
     End Function
 
     Private Sub btnSortData_Click(sender As Object, e As EventArgs) Handles btnSortData.Click
+        BubbleSort()
+    End Sub
+
+    Private Sub BubbleSort()
         Dim iCount As Integer
         Dim lblCurrent As Label
         Dim lblNext As Label
@@ -169,6 +193,11 @@ Public Class frmSortVisualization
         Dim iLoopCount As Integer
         iCount = colCollection.Count
         iLoopCount = 0
+        FormBorderStyle = FormBorderStyle.FixedSingle
+        MaximizeBox = False
+        btnLoadDB.Enabled = False
+        btnSortData.Enabled = False
+        chkReverseSort.Enabled = False
         Do
             bSwap = False
             For iCount = 0 To colCollection.Count - 2
@@ -201,6 +230,11 @@ Public Class frmSortVisualization
             Debug.Print(colCollection.Item("L:" & iCount).text)
         Next
         MsgBox("Sorting complete!!")
+        FormBorderStyle = FormBorderStyle.Sizable
+        MaximizeBox = True
+        btnLoadDB.Enabled = True
+        btnSortData.Enabled = True
+        chkReverseSort.Enabled = True
     End Sub
 
     Private Sub SwapLabels(lblCurrent As Label, lblNext As Label)
@@ -208,7 +242,6 @@ Public Class frmSortVisualization
         Dim dNextTop As Double
         Dim bChange As Boolean
         Dim iCount As Integer
-
         For iCount = 1 To 20
             lblCurrent.Left = lblCurrent.Left - 1
             lblNext.Left = lblNext.Left + 1
@@ -249,4 +282,18 @@ Public Class frmSortVisualization
     Private Sub tbSpeed_Scroll(sender As Object, e As EventArgs) Handles tbSpeed.Scroll
         iSwapSpeed = tbSpeed.Value
     End Sub
+
+    Private Sub frmSortVisualization_Resize(sender As Object, e As EventArgs) Handles Me.Resize
+        Dim iOffset As Integer = 80
+        btnLoadDB.Left = Width - iOffset - (btnLoadDB.Width / 2)
+        btnSortData.Left = Width - iOffset - (btnSortData.Width / 2)
+        tbSpeed.Left = Width - iOffset - (tbSpeed.Width / 2)
+        Label1.Left = Width - iOffset - (Label1.Width / 2)
+        chkReverseSort.Left = Width - iOffset - (chkReverseSort.Width / 2)
+        dMaxWidth = Width * 0.5
+        If colCollection IsNot Nothing Then
+            DrawLabels()
+        End If
+    End Sub
+
 End Class

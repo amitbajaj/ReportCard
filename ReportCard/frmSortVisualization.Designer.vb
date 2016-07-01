@@ -87,9 +87,6 @@ Partial Class frmSortVisualization
         Me.Controls.Add(Me.tbSpeed)
         Me.Controls.Add(Me.btnSortData)
         Me.Controls.Add(Me.btnLoadDB)
-        Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D
-        Me.MaximizeBox = False
-        Me.MinimizeBox = False
         Me.Name = "frmSortVisualization"
         Me.Text = "Sort Visualization"
         CType(Me.tbSpeed, System.ComponentModel.ISupportInitialize).EndInit()
