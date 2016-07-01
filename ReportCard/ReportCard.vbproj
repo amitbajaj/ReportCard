@@ -79,6 +79,12 @@
       <DependentUpon>frmMarks.vb</DependentUpon>
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="frmSortVisualization.Designer.vb">
+      <DependentUpon>frmSortVisualization.vb</DependentUpon>
+    </Compile>
+    <Compile Include="frmSortVisualization.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>
@@ -98,6 +104,9 @@
   <ItemGroup>
     <EmbeddedResource Include="frmMarks.resx">
       <DependentUpon>frmMarks.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmSortVisualization.resx">
+      <DependentUpon>frmSortVisualization.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="My Project\Resources.resx">
       <Generator>VbMyResourcesResXFileCodeGenerator</Generator>
