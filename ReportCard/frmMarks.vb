@@ -163,6 +163,11 @@ Public Class frmMarks
         If oFlDlg.ShowDialog() = DialogResult.OK Then
             If OpenConnection(oFlDlg.FileName) Then
                 LoadData()
+                If DGVMarks.Rows.Count > 1 Then
+                    DGVMarks.Focus()
+                    DGVMarks.Rows.Item(0).Selected = True
+                    txtValue.Text = DGVMarks.CurrentCell.Value
+                End If
             Else
                 MsgBox("Error loading database!" & vbCrLf & LastError)
             End If
@@ -181,4 +186,21 @@ Public Class frmMarks
             e.Handled = False
         End If
     End Sub
+
+    Private Sub DGVMarks_KeyDown(sender As Object, e As KeyEventArgs) Handles DGVMarks.KeyDown
+        If e.KeyCode = Asc(vbCr) Then
+            If DGVMarks.CurrentCell IsNot Nothing Then
+                If DGVMarks.CurrentCell.ColumnIndex < DGVMarks.ColumnCount - 2 Then
+                    DGVMarks.CurrentCell = DGVMarks.CurrentRow.Cells.Item(DGVMarks.CurrentCell.ColumnIndex + 1)
+                    DGVMarks.CurrentCell.OwningRow.Selected = True
+                ElseIf DGVMarks.CurrentRow.Index < DGVMarks.Rows.Count - 1 Then
+                    DGVMarks.CurrentCell = DGVMarks.Rows.Item(DGVMarks.CurrentRow.Index + 1).Cells.Item(0)
+                    DGVMarks.CurrentCell.OwningRow.Selected = True
+                End If
+                txtValue.Text = DGVMarks.CurrentCell.Value
+                e.Handled = True
+            End If
+        End If
+    End Sub
+
 End Class

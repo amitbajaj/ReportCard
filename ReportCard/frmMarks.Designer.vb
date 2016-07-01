@@ -24,6 +24,7 @@ Partial Class frmMarks
     Private Sub InitializeComponent()
         Me.DGVMarks = New System.Windows.Forms.DataGridView()
         Me.btnLoadDB = New System.Windows.Forms.Button()
+        Me.txtValue = New System.Windows.Forms.TextBox()
         CType(Me.DGVMarks, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
@@ -47,11 +48,19 @@ Partial Class frmMarks
         Me.btnLoadDB.Text = "Load Database"
         Me.btnLoadDB.UseVisualStyleBackColor = True
         '
+        'txtValue
+        '
+        Me.txtValue.Location = New System.Drawing.Point(13, 415)
+        Me.txtValue.Name = "txtValue"
+        Me.txtValue.Size = New System.Drawing.Size(198, 20)
+        Me.txtValue.TabIndex = 2
+        '
         'frmMarks
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(425, 450)
+        Me.ClientSize = New System.Drawing.Size(775, 450)
+        Me.Controls.Add(Me.txtValue)
         Me.Controls.Add(Me.btnLoadDB)
         Me.Controls.Add(Me.DGVMarks)
         Me.Name = "frmMarks"
@@ -59,9 +68,11 @@ Partial Class frmMarks
         Me.Text = "Marks"
         CType(Me.DGVMarks, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
+        Me.PerformLayout()
 
     End Sub
 
     Friend WithEvents DGVMarks As DataGridView
     Friend WithEvents btnLoadDB As Button
+    Friend WithEvents txtValue As TextBox
 End Class
