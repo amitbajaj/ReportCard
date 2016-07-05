@@ -1,13 +1,12 @@
 ﻿Imports System.Data
 Imports System.Data.OleDb
+Imports System.Threading
 Public Class frmMarks
     Private CurrentDatabase As String
     Private Connection As OleDbConnection
     Private LastError As String
     Private colCollection As Collection
-    Private Sub frmMarks_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-
-    End Sub
+    Private iSwapSpeed As Integer
 
     Private Sub frmMarks_Resize(sender As Object, e As EventArgs) Handles Me.Resize
         DGVMarks.Width = Me.Width - 40
@@ -32,10 +31,12 @@ Public Class frmMarks
                 With DGVMarks.Rows
                     iRowCount = .Add()
                     For iFieldCount = 0 To rs.FieldCount - 1
-                        .Item(iRowCount).Cells.Item(iFieldCount).Value = (rs.Item(iFieldCount).ToString())
+                        .Item(iRowCount).Cells.Item(iFieldCount + 1).Value = (rs.Item(iFieldCount).ToString())
                     Next
                 End With
             End While
+            cmdSort.Enabled = True
+            cboColumn.Enabled = True
         Else
             MsgBox("No records found!")
         End If
@@ -134,6 +135,15 @@ Public Class frmMarks
         Next
         Dim col1 As DataGridViewTextBoxColumn
         colCollection = New Collection()
+        cboColumn.Items.Clear()
+
+        col1 = New DataGridViewTextBoxColumn()
+        col1.Name = "RANKING"
+        col1.HeaderText = "Ranking"
+        col1.ReadOnly = True
+        col1.SortMode = DataGridViewColumnSortMode.NotSortable
+        col1.AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader
+        DGVMarks.Columns.Add(col1)
         For iColCount = 0 To rs.FieldCount - 1
             With DGVMarks.Columns
                 col1 = New DataGridViewTextBoxColumn()
@@ -143,6 +153,7 @@ Public Class frmMarks
                     Case "Int32"
                         col1.DefaultCellStyle.Format = "N2"
                         colCollection.Add("I", "KEY::" & iColCount)
+                        cboColumn.Items.Add(col1.Name)
                     Case Else
                         colCollection.Add("S", "KEY::" & iColCount)
                 End Select
@@ -152,7 +163,6 @@ Public Class frmMarks
                 .Add(col1)
             End With
         Next
-
         DGVMarks.MultiSelect = False
 
     End Sub
@@ -166,7 +176,6 @@ Public Class frmMarks
                 If DGVMarks.Rows.Count > 1 Then
                     DGVMarks.Focus()
                     DGVMarks.Rows.Item(0).Selected = True
-                    txtValue.Text = DGVMarks.CurrentCell.Value
                 End If
             Else
                 MsgBox("Error loading database!" & vbCrLf & LastError)
@@ -197,10 +206,70 @@ Public Class frmMarks
                     DGVMarks.CurrentCell = DGVMarks.Rows.Item(DGVMarks.CurrentRow.Index + 1).Cells.Item(0)
                     DGVMarks.CurrentCell.OwningRow.Selected = True
                 End If
-                txtValue.Text = DGVMarks.CurrentCell.Value
                 e.Handled = True
             End If
         End If
+    End Sub
+
+    Private Sub frmMarks_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        cmdSort.Enabled = False
+        cboColumn.Enabled = False
+        cboColumn.DropDownStyle = ComboBoxStyle.DropDownList
+    End Sub
+
+    Private Sub cmdSort_Click(sender As Object, e As EventArgs) Handles cmdSort.Click
+        If cboColumn.SelectedIndex > 0 Then
+            BubbleSort()
+            MsgBox("Sorting complete!")
+        Else
+            MsgBox("Select a column to sort on!!")
+        End If
+    End Sub
+
+    Private Sub tbSpeed_Scroll(sender As Object, e As EventArgs) Handles tbSpeed.Scroll
+        iSwapSpeed = tbSpeed.Value
+    End Sub
+
+    Private Sub BubbleSort()
+        Dim sColumn As String
+        Dim iRowCount As Integer
+        Dim bSwap As Boolean
+        sColumn = cboColumn.Items(cboColumn.SelectedIndex)
+        btnLoadDB.Enabled = False
+        cmdSort.Enabled = False
+        cboColumn.Enabled = False
+        Do
+            bSwap = False
+            For iRowCount = 0 To DGVMarks.Rows.Count - 2
+                If Double.Parse(DGVMarks.Rows(iRowCount).Cells(sColumn).Value) > Double.Parse(DGVMarks.Rows(iRowCount + 1).Cells(sColumn).Value) Then
+                    SwapRows(DGVMarks.Rows(iRowCount), DGVMarks.Rows(iRowCount + 1))
+                    bSwap = True
+                End If
+            Next
+        Loop While bSwap
+        For iRowCount = 0 To DGVMarks.Rows.Count - 1
+            DGVMarks.Rows(iRowCount).Cells(0).Value = iRowCount + 1
+        Next
+        btnLoadDB.Enabled = True
+        cmdSort.Enabled = True
+        cboColumn.Enabled = True
+    End Sub
+
+    Private Sub SwapRows(rCurrent As DataGridViewRow, rNext As DataGridViewRow)
+        Dim sTemp As String
+        Dim iColumnCount As Integer
+        rCurrent.DefaultCellStyle.BackColor = Color.Aqua
+        rNext.DefaultCellStyle.BackColor = Color.Violet
+        For iColumnCount = 0 To rCurrent.Cells.Count - 1
+
+            sTemp = rCurrent.Cells(iColumnCount).Value
+            rCurrent.Cells(iColumnCount).Value = rNext.Cells(iColumnCount).Value
+            rNext.Cells(iColumnCount).Value = sTemp
+            Application.DoEvents()
+            Thread.Sleep(iSwapSpeed)
+        Next
+        rCurrent.DefaultCellStyle.BackColor = Color.White
+        rNext.DefaultCellStyle.BackColor = Color.White
     End Sub
 
 End Class
