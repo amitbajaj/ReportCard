@@ -27,30 +27,32 @@ Partial Class frmSortVisualization
         Me.tbSpeed = New System.Windows.Forms.TrackBar()
         Me.Label1 = New System.Windows.Forms.Label()
         Me.chkReverseSort = New System.Windows.Forms.CheckBox()
+        Me.cboColumn = New System.Windows.Forms.ComboBox()
+        Me.cmdLoadData = New System.Windows.Forms.Button()
         CType(Me.tbSpeed, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
         'btnLoadDB
         '
-        Me.btnLoadDB.Location = New System.Drawing.Point(393, 12)
+        Me.btnLoadDB.Location = New System.Drawing.Point(367, 12)
         Me.btnLoadDB.Name = "btnLoadDB"
-        Me.btnLoadDB.Size = New System.Drawing.Size(111, 23)
+        Me.btnLoadDB.Size = New System.Drawing.Size(120, 23)
         Me.btnLoadDB.TabIndex = 2
         Me.btnLoadDB.Text = "Load Database"
         Me.btnLoadDB.UseVisualStyleBackColor = True
         '
         'btnSortData
         '
-        Me.btnSortData.Location = New System.Drawing.Point(393, 41)
+        Me.btnSortData.Location = New System.Drawing.Point(367, 90)
         Me.btnSortData.Name = "btnSortData"
-        Me.btnSortData.Size = New System.Drawing.Size(111, 23)
+        Me.btnSortData.Size = New System.Drawing.Size(120, 23)
         Me.btnSortData.TabIndex = 3
         Me.btnSortData.Text = "Sort Data"
         Me.btnSortData.UseVisualStyleBackColor = True
         '
         'tbSpeed
         '
-        Me.tbSpeed.Location = New System.Drawing.Point(393, 88)
+        Me.tbSpeed.Location = New System.Drawing.Point(374, 142)
         Me.tbSpeed.Maximum = 20
         Me.tbSpeed.Name = "tbSpeed"
         Me.tbSpeed.RightToLeft = System.Windows.Forms.RightToLeft.Yes
@@ -61,7 +63,7 @@ Partial Class frmSortVisualization
         'Label1
         '
         Me.Label1.AutoSize = True
-        Me.Label1.Location = New System.Drawing.Point(405, 119)
+        Me.Label1.Location = New System.Drawing.Point(386, 173)
         Me.Label1.Name = "Label1"
         Me.Label1.Size = New System.Drawing.Size(87, 13)
         Me.Label1.TabIndex = 5
@@ -70,18 +72,38 @@ Partial Class frmSortVisualization
         'chkReverseSort
         '
         Me.chkReverseSort.AutoSize = True
-        Me.chkReverseSort.Location = New System.Drawing.Point(402, 67)
+        Me.chkReverseSort.Location = New System.Drawing.Point(383, 121)
         Me.chkReverseSort.Name = "chkReverseSort"
         Me.chkReverseSort.Size = New System.Drawing.Size(94, 17)
         Me.chkReverseSort.TabIndex = 6
         Me.chkReverseSort.Text = "Reverse Sort?"
         Me.chkReverseSort.UseVisualStyleBackColor = True
         '
+        'cboColumn
+        '
+        Me.cboColumn.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.cboColumn.FormattingEnabled = True
+        Me.cboColumn.Location = New System.Drawing.Point(367, 39)
+        Me.cboColumn.Name = "cboColumn"
+        Me.cboColumn.Size = New System.Drawing.Size(120, 21)
+        Me.cboColumn.TabIndex = 7
+        '
+        'cmdLoadData
+        '
+        Me.cmdLoadData.Location = New System.Drawing.Point(367, 64)
+        Me.cmdLoadData.Name = "cmdLoadData"
+        Me.cmdLoadData.Size = New System.Drawing.Size(120, 23)
+        Me.cmdLoadData.TabIndex = 8
+        Me.cmdLoadData.Text = "Load Data"
+        Me.cmdLoadData.UseVisualStyleBackColor = True
+        '
         'frmSortVisualization
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(516, 458)
+        Me.Controls.Add(Me.cmdLoadData)
+        Me.Controls.Add(Me.cboColumn)
         Me.Controls.Add(Me.chkReverseSort)
         Me.Controls.Add(Me.Label1)
         Me.Controls.Add(Me.tbSpeed)
@@ -100,4 +122,6 @@ Partial Class frmSortVisualization
     Friend WithEvents tbSpeed As TrackBar
     Friend WithEvents Label1 As Label
     Friend WithEvents chkReverseSort As CheckBox
+    Friend WithEvents cboColumn As ComboBox
+    Friend WithEvents cmdLoadData As Button
 End Class

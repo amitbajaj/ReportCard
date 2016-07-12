@@ -31,12 +31,13 @@ Public Class frmMarks
                 With DGVMarks.Rows
                     iRowCount = .Add()
                     For iFieldCount = 0 To rs.FieldCount - 1
-                        .Item(iRowCount).Cells.Item(iFieldCount + 1).Value = (rs.Item(iFieldCount).ToString())
+                        .Item(iRowCount).Cells.Item(iFieldCount).Value = (rs.Item(iFieldCount).ToString())
                     Next
                 End With
             End While
             cmdSort.Enabled = True
             cboColumn.Enabled = True
+            cboRankColumn.Enabled = True
         Else
             MsgBox("No records found!")
         End If
@@ -137,13 +138,14 @@ Public Class frmMarks
         colCollection = New Collection()
         cboColumn.Items.Clear()
 
-        col1 = New DataGridViewTextBoxColumn()
-        col1.Name = "RANKING"
-        col1.HeaderText = "Ranking"
-        col1.ReadOnly = True
-        col1.SortMode = DataGridViewColumnSortMode.NotSortable
-        col1.AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader
-        DGVMarks.Columns.Add(col1)
+
+        'col1 = New DataGridViewTextBoxColumn()
+        'col1.Name = "RANKING"
+        'col1.HeaderText = "Ranking"
+        'col1.ReadOnly = True
+        'col1.SortMode = DataGridViewColumnSortMode.NotSortable
+        'col1.AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader
+        'DGVMarks.Columns.Add(col1)
         For iColCount = 0 To rs.FieldCount - 1
             With DGVMarks.Columns
                 col1 = New DataGridViewTextBoxColumn()
@@ -154,6 +156,7 @@ Public Class frmMarks
                         col1.DefaultCellStyle.Format = "N2"
                         colCollection.Add("I", "KEY::" & iColCount)
                         cboColumn.Items.Add(col1.Name)
+                        cboRankColumn.Items.Add(col1.Name)
                     Case Else
                         colCollection.Add("S", "KEY::" & iColCount)
                 End Select
@@ -214,15 +217,17 @@ Public Class frmMarks
     Private Sub frmMarks_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         cmdSort.Enabled = False
         cboColumn.Enabled = False
+        cboRankColumn.Enabled = False
         cboColumn.DropDownStyle = ComboBoxStyle.DropDownList
+        cboRankColumn.DropDownStyle = ComboBoxStyle.DropDownList
     End Sub
 
     Private Sub cmdSort_Click(sender As Object, e As EventArgs) Handles cmdSort.Click
-        If cboColumn.SelectedIndex > 0 Then
+        If cboColumn.SelectedIndex > 0 And cboRankColumn.SelectedIndex > 0 Then
             BubbleSort()
             MsgBox("Sorting complete!")
         Else
-            MsgBox("Select a column to sort on!!")
+            MsgBox("Select a column to sort on and a column to update the RANK!!")
         End If
     End Sub
 
@@ -232,28 +237,40 @@ Public Class frmMarks
 
     Private Sub BubbleSort()
         Dim sColumn As String
+        Dim sRankColumn As String
         Dim iRowCount As Integer
         Dim bSwap As Boolean
         sColumn = cboColumn.Items(cboColumn.SelectedIndex)
+        sRankColumn = cboRankColumn.Items(cboRankColumn.SelectedIndex)
         btnLoadDB.Enabled = False
         cmdSort.Enabled = False
         cboColumn.Enabled = False
+        cboRankColumn.Enabled = False
         Do
             bSwap = False
             For iRowCount = 0 To DGVMarks.Rows.Count - 2
-                If Double.Parse(DGVMarks.Rows(iRowCount).Cells(sColumn).Value) > Double.Parse(DGVMarks.Rows(iRowCount + 1).Cells(sColumn).Value) Then
+                If Double.Parse(DGVMarks.Rows(iRowCount).Cells(sColumn).Value) < Double.Parse(DGVMarks.Rows(iRowCount + 1).Cells(sColumn).Value) Then
                     SwapRows(DGVMarks.Rows(iRowCount), DGVMarks.Rows(iRowCount + 1))
                     bSwap = True
                 End If
             Next
         Loop While bSwap
         For iRowCount = 0 To DGVMarks.Rows.Count - 1
-            DGVMarks.Rows(iRowCount).Cells(0).Value = iRowCount + 1
+            DGVMarks.Rows(iRowCount).Cells(sRankColumn).Value = iRowCount + 1
         Next
         btnLoadDB.Enabled = True
         cmdSort.Enabled = True
         cboColumn.Enabled = True
+        cboRankColumn.Enabled = True
     End Sub
+
+    Private Function CompareRows(rCurrent As DataGridViewRow, rNext As DataGridViewRow, sCompareColumn As String) As Integer
+        If rCurrent.Cells(sCompareColumn).Value > rNext.Cells(sCompareColumn).Value Then
+            CompareRows = 1
+        Else
+            CompareRows = 2
+        End If
+    End Function
 
     Private Sub SwapRows(rCurrent As DataGridViewRow, rNext As DataGridViewRow)
         Dim sTemp As String
@@ -270,6 +287,19 @@ Public Class frmMarks
         Next
         rCurrent.DefaultCellStyle.BackColor = Color.White
         rNext.DefaultCellStyle.BackColor = Color.White
+    End Sub
+
+    Private Sub BinaryMergeSort(iMin As Integer, iMax As Integer)
+        Dim iMid As Integer
+        If iMax - iMin > 1 Then
+            iMid = (iMax + iMin) / 2
+            BinaryMergeSort(iMin, iMid)
+            BinaryMergeSort(iMid + 1, iMax)
+        Else
+            If CompareRows(DGVMarks.Rows(iMin), DGVMarks.Rows(iMax), cboColumn.Items(cboColumn.SelectedIndex)) = 1 Then
+                SwapRows(DGVMarks.Rows(iMin), DGVMarks.Rows(iMax))
+            End If
+        End If
     End Sub
 
 End Class

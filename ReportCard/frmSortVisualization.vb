@@ -15,11 +15,28 @@ Public Class frmSortVisualization
         oFlDlg.Filter = "Access Database|*.mdb"
         If oFlDlg.ShowDialog() = DialogResult.OK Then
             If OpenConnection(oFlDlg.FileName) Then
-                LoadData()
+                LoadDropDown()
             Else
                 MsgBox("Error loading database!" & vbCrLf & LastError)
             End If
         End If
+    End Sub
+
+    Private Sub LoadDropDown()
+        Dim da As OleDbDataAdapter
+        Dim ds As New DataSet
+        Dim col1 As DataColumn
+        Dim sSQL As String
+        Dim iRecords As Integer
+        sSQL = "SELECT * FROM STUDENT"
+        da = New OleDbDataAdapter(sSQL, Connection)
+        iRecords = da.Fill(ds)
+        cboColumn.Items.Clear()
+        For Each col1 In ds.Tables(0).Columns
+            If col1.DataType.ToString() = "System.Int32" Then
+                cboColumn.Items.Add(col1.ColumnName)
+            End If
+        Next
     End Sub
 
     Private Sub LoadData()
@@ -30,14 +47,16 @@ Public Class frmSortVisualization
         Dim iRecords As Integer
         Dim lblRecord As Label
         Dim pMargin As Padding
+        Dim sColumnName As String
+        sColumnName = cboColumn.Items(cboColumn.SelectedIndex)
         sSQL = "SELECT * FROM STUDENT"
         da = New OleDbDataAdapter(sSQL, Connection)
         iRecords = da.Fill(ds)
         pMargin = New Padding(0)
         dMaxValue = 0
         For iRowCount = 0 To iRecords - 1
-            If Double.Parse(ds.Tables(0).Rows.Item(iRowCount).Item(1).ToString()) > dMaxValue Then
-                dMaxValue = Double.Parse(ds.Tables(0).Rows.Item(iRowCount).Item(1).ToString())
+            If Double.Parse(ds.Tables(0).Rows.Item(iRowCount).Item(sColumnName).ToString()) > dMaxValue Then
+                dMaxValue = Double.Parse(ds.Tables(0).Rows.Item(iRowCount).Item(sColumnName).ToString())
             End If
         Next
 
@@ -55,7 +74,8 @@ Public Class frmSortVisualization
             lblRecord = New Label()
             lblRecord.AutoSize = False
             lblRecord.AutoEllipsis = True
-            lblRecord.Text = ds.Tables(0).Rows.Item(iRowCount).Item(1).ToString()
+            lblRecord.Text = ds.Tables(0).Rows.Item(iRowCount).Item("STUDENT_NAME").ToString() & " >> " & ds.Tables(0).Rows.Item(iRowCount).Item(sColumnName).ToString()
+            lblRecord.Tag = ds.Tables(0).Rows.Item(iRowCount).Item(sColumnName)
             lblRecord.Padding = pMargin
             lblRecord.BorderStyle = BorderStyle.FixedSingle
             lblRecord.BackColor = Color.Aquamarine
@@ -90,7 +110,7 @@ Public Class frmSortVisualization
             lblRecord.Font = fLabelFont
             lblRecord.Height = dLabelHeight
             lblRecord.Top = (dLabelHeight * iRowCount) + 1
-            lblRecord.Width = dMaxWidth * (Double.Parse(lblRecord.Text) / dMaxValue)
+            lblRecord.Width = dMaxWidth * (lblRecord.Tag / dMaxValue)
             lblRecord.Left = (Width - lblRecord.Width) / 2
         Next
     End Sub
@@ -188,7 +208,11 @@ Public Class frmSortVisualization
     Private Sub BubbleSort()
         Dim iCount As Integer
         Dim lblCurrent As Label
+        Dim dCurrentValue As Double
+
         Dim lblNext As Label
+        Dim dNextValue As Double
+
         Dim bSwap As Boolean
         Dim iLoopCount As Integer
         iCount = colCollection.Count
@@ -202,9 +226,14 @@ Public Class frmSortVisualization
             bSwap = False
             For iCount = 0 To colCollection.Count - 2
                 lblCurrent = colCollection.Item("L:" & iCount)
+                dCurrentValue = lblCurrent.Tag
                 lblNext = colCollection.Item("L:" & (iCount + 1))
+                dNextValue = lblNext.Tag
+                'Debug.Print(lblNext.Text.Substring(lblNext.Text.IndexOf(" >> ") + 4, lblNext.Text.Length - lblNext.Text.IndexOf(" >> ") - 4))
+
+
                 If chkReverseSort.Checked Then
-                    If Double.Parse(lblCurrent.Text) < Double.Parse(lblNext.Text) Then
+                    If dCurrentValue > dNextValue Then
                         colCollection.Remove("L:" & iCount)
                         colCollection.Remove("L:" & (iCount + 1))
                         colCollection.Add(lblNext, "L:" & iCount)
@@ -213,7 +242,7 @@ Public Class frmSortVisualization
                         bSwap = True
                     End If
                 Else
-                    If Double.Parse(lblCurrent.Text) > Double.Parse(lblNext.Text) Then
+                    If dCurrentValue < dNextValue Then
                         colCollection.Remove("L:" & iCount)
                         colCollection.Remove("L:" & (iCount + 1))
                         colCollection.Add(lblNext, "L:" & iCount)
@@ -227,8 +256,15 @@ Public Class frmSortVisualization
             Debug.Print("Loop : " & iLoopCount)
         Loop While bSwap
         For iCount = 0 To colCollection.Count - 1
+            If colCollection.Item("L:" & iCount).text.IndexOf(" R: ") > -1 Then
+                colCollection.Item("L:" & iCount).text = colCollection.Item("L:" & iCount).text.SubString(0, colCollection.Item("L:" & iCount).text.IndexOf(" R: ") - 1)
+            Else
+                colCollection.Item("L:" & iCount).text = colCollection.Item("L:" & iCount).text & " R: " & (iCount + 1)
+            End If
+
             Debug.Print(colCollection.Item("L:" & iCount).text)
         Next
+
         MsgBox("Sorting complete!!")
         FormBorderStyle = FormBorderStyle.Sizable
         MaximizeBox = True
@@ -286,6 +322,8 @@ Public Class frmSortVisualization
     Private Sub frmSortVisualization_Resize(sender As Object, e As EventArgs) Handles Me.Resize
         Dim iOffset As Integer = 80
         btnLoadDB.Left = Width - iOffset - (btnLoadDB.Width / 2)
+        cmdLoadData.Left = Width - iOffset - (cmdLoadData.Width / 2)
+        cboColumn.Left = Width - iOffset - (cboColumn.Width / 2)
         btnSortData.Left = Width - iOffset - (btnSortData.Width / 2)
         tbSpeed.Left = Width - iOffset - (tbSpeed.Width / 2)
         Label1.Left = Width - iOffset - (Label1.Width / 2)
@@ -296,4 +334,15 @@ Public Class frmSortVisualization
         End If
     End Sub
 
+    Private Sub cmdLoadData_Click(sender As Object, e As EventArgs) Handles cmdLoadData.Click
+        If cboColumn.SelectedIndex > 0 Then
+            LoadData()
+        Else
+            MsgBox("Select a column to load data....")
+        End If
+    End Sub
+
+    Private Sub frmSortVisualization_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+
+    End Sub
 End Class
